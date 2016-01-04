@@ -1,36 +1,52 @@
 #include <iostream>
+#include <map>
+#include <stdlib.h>
+#include <string.h> 
+#include <stdexcept>
 
 class SmallAllocator {
 public:
         SmallAllocator() {
         	memory = malloc(INITIAL_SIZE);	
+        	beg = memory;
+        	end = memory + INITIAL_SIZE;
         }
 
         ~SmallAllocator() {
-                free(memory);
+            free(memory);
         }
 
         void *Alloc(unsigned int Size) {
-                ((int*)memory)* = Size;
-                void* ptr = memory + sizeof(int);
-                memory += Size;
-                return ptr;                
+            if (beg + Size > end) {
+                throw std::runtime_error("insufficient space to allocate");
+            }
+            void* Pointer = beg;
+            blocks.insert(std::make_pair(Pointer, Size));
+            beg += Size;
+            return Pointer;               
         };
 
-        void *ReAlloc(void *ptr, unsigned int Size) {
+        void *ReAlloc(void *Pointer, unsigned int Size) {
+            void* newPointer = Alloc(Size);
+            auto it = blocks.find(Pointer);
+            if (it == blocks.end()) {
+                throw std::runtime_error("incorrect pointer");
+            }
+            memcpy(newPointer, it->first, it->second);
+            Free(Pointer);
+            return newPointer;
         };
 
-        void Free(void *ptr) {
-		void* memory = ptr - sizeof(int);
-                int Size = *((int*)memory); 
-		blocks.erase(memory);
+        void Free(void *Pointer) {
+            blocks.erase(Pointer);
         };
 
 private:
         void* memory;
-	std::map<void*,int> blocks;
+        void* beg;
+        void* end;
+        std::map<void*,int> blocks;
         const int INITIAL_SIZE = 64*1024;
-        
 };
 
 int main(int argc, char** argv) {
