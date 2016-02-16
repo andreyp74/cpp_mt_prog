@@ -3,6 +3,7 @@
 #include <sys/msg.h>
 #include <stdio.h>
 #include <fcntl.h>
+#include <errno.h>
 
 struct message{
 	long type;
@@ -12,7 +13,7 @@ struct message{
 int main() {
 	int rc = 0;
 	key_t key = ftok("/tmp/msg.temp", 1);
-	int msgid = msgget(key, IPC_CREAT);
+	int msgid = msgget(key, 0660 | IPC_CREAT);
 	if (msgid < 0) {
 		printf("error queue create\n");
 		return 1;
@@ -20,7 +21,7 @@ int main() {
 	
 	rc = msgrcv(msgid, &msg, sizeof(msg.mtext), 0, 0);
 	if (rc < 0) {
-		printf("msgrcv failed, rc=%d\n", rc);	
+		printf("msgrcv failed, rc=%d, errno=%d\n", rc, errno);	
 		return 1;
 	}	
 	int fd = open("/home/box/message.txt", O_CREAT | O_WRONLY, 0666);
