@@ -16,6 +16,8 @@ void* inc(void* pval) {
 	int* pi = (int*) pval;
 	++(*pi);
 
+	pause();
+
 	return pi;
 }
 
@@ -27,7 +29,7 @@ int main(int, char**) {
 	int val = 1;
 	pthread_create(&thread_id, NULL, inc, &val);
 	void* res;
-	pthread_join(&thread_id, res);
+	pthread_join(thread_id, &res);
 	free(res);
 
 	return 0;
